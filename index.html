@@ -1,49 +1,217 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <title>ثبت سفارش</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Form</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      padding-right: 40px;
+    :root {
+      --bg-color: #f1f5ff;
+      --accent-color: #1f4ed8;
     }
-    input, select, button {
-      display: block;
-      width: 100%;
+
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 420px;
+      direction: rtl;
+      animation: popIn 0.8s ease;
+      position: relative;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .language-switch {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+    }
+
+    .language-switch select {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-weight: bold;
+      background-color: #eef3ff;
+      color: var(--accent-color);
+    }
+
+    h2 {
+      text-align: center;
       margin-top: 10px;
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: 700;
+    }
+
+    input, select, button {
+      width: 100%;
       padding: 10px;
-      font-size: 16px;
+      margin-top: 6px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: var(--accent-color);
+      color: white;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .product-info {
+      background: #eef3ff;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-left: 4px solid var(--accent-color);
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
-  <h2>🛒 فرم ثبت سفارش</h2> 
-  <form id="order-form">
-    <input type="text" id="name" placeholder="نام شما" required>
-    <input type="tel" id="phone" placeholder="شماره موبایل" required>
-    
-    <select id="product">
-      <option value="vpn_1m">VPN یک‌ماهه</option>
-      <option value="vpn_6m">VPN شش‌ماهه</option>
-      <option value="spotify">اشتراک Spotify</option>
-      <option value="youtube">اشتراک YouTube</option>
-    </select>
+  <div class="container">
+    <div class="language-switch">
+      <select id="lang-select" onchange="switchLanguage(this.value)">
+        <option value="fa" id="lang-fa">فا</option>
+        <option value="en">EN</option>
+        <option value="ar">AR</option>
+        <option value="tr">TR</option>
+      </select>
+    </div>
+    <h2 id="form-title">🛒 ثبت سفارش</h2>
+    <div id="productDisplay" class="product-info">در حال دریافت محصول...</div>
+    <form id="order-form">
+      <label for="name" id="label-name">نام شما</label>
+      <input type="text" id="name" placeholder="مثلاً علی" required />
 
-    <select id="payment">
-      <option value="zarinpal">زرین‌پال</option>
-      <option value="crypto">ارز دیجیتال</option>
-    </select>
+      <label for="phone" id="label-phone">شماره موبایل</label>
+      <input type="tel" id="phone" placeholder="09xxxxxxxxx" required />
 
-    <button type="submit">ثبت سفارش</button>
-  </form>
+      <label for="payment" id="label-payment">روش پرداخت</label>
+      <select id="payment">
+        <option value="zarinpal">زرین پال</option>
+        <option value="crypto">ارز دیجیتال</option>
+      </select>
+
+      <button type="submit" id="submit-button">ثبت سفارش</button>
+    </form>
+  </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-    tg.expand(); // نمایش تمام‌صفحه
+    tg.expand();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const product = urlParams.get('product');
+    let lang = localStorage.getItem("lang") || "fa";
+
+    const productMap = {
+      vpn_1m: { fa: "VPN یک‌ماهه", en: "1-month VPN", ar: "VPN لمدة شهر", tr: "1 Aylık VPN" },
+      vpn_6m: { fa: "VPN شش‌ماهه", en: "6-month VPN", ar: "VPN لمدة 6 أشهر", tr: "6 Aylık VPN" },
+      spotify: { fa: "اشتراک Spotify", en: "Spotify Premium", ar: "اشتراك Spotify", tr: "Spotify Premium" },
+      youtube: { fa: "اشتراک YouTube", en: "YouTube Premium", ar: "اشتراك YouTube", tr: "YouTube Premium" }
+    };
+
+    const translations = {
+      fa: {
+        title: "🛒 ثبت سفارش",
+        name: "نام شما",
+        phone: "شماره موبایل",
+        payment: "روش پرداخت",
+        submit: "ثبت سفارش",
+        product: "🛒 محصول انتخاب‌شده: ",
+        placeholders: { name: "مثلاً علی", phone: "09xxxxxxxxx" },
+        payments: ["زرین پال", "ارز دیجیتال"],
+        unknown: "نامشخص"
+      },
+      en: {
+        title: "🛒 Order Form",
+        name: "Your Name",
+        phone: "Phone Number",
+        payment: "Payment Method",
+        submit: "ORDER",
+        product: "🛒 Selected Product: ",
+        placeholders: { name: "e.g. John", phone: "e.g. +123456789" },
+        payments: ["ZarinPal", "Crypto Currency"],
+        unknown: "Unknown"
+      },
+      ar: {
+        title: "🛒 نموذج الطلب",
+        name: "اسمك",
+        phone: "رقم الهاتف",
+        payment: "طريقة الدفع",
+        submit: "أرسل الطلب",
+        product: "🛒 المنتج المختار: ",
+        placeholders: { name: "مثلاً أحمد", phone: "مثلاً ٠٥xxxxxxxx" },
+        payments: ["زرين پال", "العملة الرقمية"],
+        unknown: "غير معروف"
+      },
+      tr: {
+        title: "🛒 Sipariş Formu",
+        name: "Adınız",
+        phone: "Telefon Numarası",
+        payment: "Ödeme Yöntemi",
+        submit: "SİPARİŞ VER",
+        product: "🛒 Seçilen Ürün: ",
+        placeholders: { name: "ör. Ahmet", phone: "örn. +905xxxxxxxx" },
+        payments: ["ZarinPal", "Kripto Para"],
+        unknown: "Bilinmiyor"
+      }
+    };
+
+    function applyLanguage(lng) {
+      const t = translations[lng];
+      document.getElementById("form-title").textContent = t.title;
+      document.getElementById("label-name").textContent = t.name;
+      document.getElementById("label-phone").textContent = t.phone;
+      document.getElementById("label-payment").textContent = t.payment;
+      document.getElementById("submit-button").textContent = t.submit;
+      document.getElementById("name").placeholder = t.placeholders.name;
+      document.getElementById("phone").placeholder = t.placeholders.phone;
+      document.getElementById("payment").options[0].text = t.payments[0];
+      document.getElementById("payment").options[1].text = t.payments[1];
+      document.body.dir = lng === "fa" || lng === "ar" ? "rtl" : "ltr";
+
+      const prodName = productMap[product]?.[lng] || t.unknown;
+      document.getElementById("productDisplay").textContent = t.product + prodName;
+    }
+
+    function switchLanguage(newLang) {
+      localStorage.setItem("lang", newLang);
+      location.reload();
+    }
+
+    applyLanguage(lang);
 
     document.getElementById("order-form").addEventListener("submit", function(e) {
       e.preventDefault();
@@ -51,17 +219,21 @@
       const data = {
         name: document.getElementById("name").value,
         phone: document.getElementById("phone").value,
-        product: document.getElementById("product").value,
         payment: document.getElementById("payment").value,
         telegram_id: tg.initDataUnsafe.user?.id,
-        first_name: tg.initDataUnsafe.user?.first_name
+        first_name: tg.initDataUnsafe.user?.first_name,
+        product: product
       };
 
-      alert("اطلاعات شما ثبت شد، در مرحله بعد وصل میشیم به درگاه پرداخت!");
-
+      alert("در حال ارسال اطلاعات سفارش...");
       console.log("🟢 سفارش:", data);
-      // مرحله بعدی: ارسال این دیتا به n8n یا اتصال به درگاه
+
+      // send to webhook in next step...
     });
   </script>
 </body>
 </html>
+
+<script>
+  document.getElementById("lang-select").value = lang;
+</script>
