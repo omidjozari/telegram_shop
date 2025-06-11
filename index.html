@@ -208,7 +208,7 @@
       alert("در حال ارسال اطلاعات سفارش...");
       console.log("🟢 سفارش:", data);
       
-      fetch("https://panel.gambronservice.xyz:8443/webhook-test/submit_order", {
+      fetch("https://panel.gambronservice.xyz:8443/webhook/submit_order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
