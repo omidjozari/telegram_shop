@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ثبت سفارش</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      padding-right: 40px;
+    }
+    input, select, button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🛒 فرم ثبت سفارش</h2> 
+  <form id="order-form">
+    <input type="text" id="name" placeholder="نام شما" required>
+    <input type="tel" id="phone" placeholder="شماره موبایل" required>
+    
+    <select id="product">
+      <option value="vpn_1m">VPN یک‌ماهه</option>
+      <option value="vpn_6m">VPN شش‌ماهه</option>
+      <option value="spotify">اشتراک Spotify</option>
+      <option value="youtube">اشتراک YouTube</option>
+    </select>
+
+    <select id="payment">
+      <option value="zarinpal">زرین‌پال</option>
+      <option value="crypto">ارز دیجیتال</option>
+    </select>
+
+    <button type="submit">ثبت سفارش</button>
+  </form>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // نمایش تمام‌صفحه
+
+    document.getElementById("order-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const data = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        product: document.getElementById("product").value,
+        payment: document.getElementById("payment").value,
+        telegram_id: tg.initDataUnsafe.user?.id,
+        first_name: tg.initDataUnsafe.user?.first_name
+      };
+
+      alert("اطلاعات شما ثبت شد، در مرحله بعد وصل میشیم به درگاه پرداخت!");
+
+      console.log("🟢 سفارش:", data);
+      // مرحله بعدی: ارسال این دیتا به n8n یا اتصال به درگاه
+    });
+  </script>
+</body>
+</html>
