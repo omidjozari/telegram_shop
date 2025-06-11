@@ -12,7 +12,6 @@
       --bg-color: #f1f5ff;
       --accent-color: #1f4ed8;
     }
-
     body {
       font-family: 'Vazirmatn', sans-serif;
       margin: 0;
@@ -24,12 +23,10 @@
       min-height: 100vh;
       animation: fadeIn 1s ease;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     .container {
       background: white;
       padding: 24px;
@@ -41,18 +38,15 @@
       animation: popIn 0.8s ease;
       position: relative;
     }
-
     @keyframes popIn {
       0% { transform: scale(0.95); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-
     .language-switch {
       position: absolute;
       top: 16px;
       left: 16px;
     }
-
     .language-switch select {
       padding: 6px 10px;
       border-radius: 6px;
@@ -61,18 +55,12 @@
       background-color: #eef3ff;
       color: var(--accent-color);
     }
-
-    h2 {
-      text-align: center;
-      margin-top: 10px;
-    }
-
+    h2 { text-align: center; margin-top: 10px; }
     label {
       display: block;
       margin-top: 16px;
       font-weight: 700;
     }
-
     input, select, button {
       width: 100%;
       padding: 10px;
@@ -81,14 +69,12 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
-
     button {
       background: var(--accent-color);
       color: white;
       margin-top: 20px;
       font-weight: bold;
     }
-
     .product-info {
       background: #eef3ff;
       padding: 12px;
@@ -102,7 +88,7 @@
   <div class="container">
     <div class="language-switch">
       <select id="lang-select" onchange="switchLanguage(this.value)">
-        <option value="fa" id="lang-fa">فا</option>
+        <option value="fa">فا</option>
         <option value="en">EN</option>
         <option value="ar">AR</option>
         <option value="tr">TR</option>
@@ -113,16 +99,13 @@
     <form id="order-form">
       <label for="name" id="label-name">نام شما</label>
       <input type="text" id="name" placeholder="مثلاً علی" required />
-
       <label for="phone" id="label-phone">شماره موبایل</label>
       <input type="tel" id="phone" placeholder="09xxxxxxxxx" required />
-
       <label for="payment" id="label-payment">روش پرداخت</label>
       <select id="payment">
         <option value="zarinpal">زرین پال</option>
         <option value="crypto">ارز دیجیتال</option>
       </select>
-
       <button type="submit" id="submit-button">ثبت سفارش</button>
     </form>
   </div>
@@ -130,10 +113,10 @@
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-
     const urlParams = new URLSearchParams(window.location.search);
     const product = urlParams.get('product');
     let lang = localStorage.getItem("lang") || "fa";
+    document.getElementById("lang-select").value = lang;
 
     const productMap = {
       vpn_1m: { fa: "VPN یک‌ماهه", en: "1-month VPN", ar: "VPN لمدة شهر", tr: "1 Aylık VPN" },
@@ -201,7 +184,6 @@
       document.getElementById("payment").options[0].text = t.payments[0];
       document.getElementById("payment").options[1].text = t.payments[1];
       document.body.dir = lng === "fa" || lng === "ar" ? "rtl" : "ltr";
-
       const prodName = productMap[product]?.[lng] || t.unknown;
       document.getElementById("productDisplay").textContent = t.product + prodName;
     }
@@ -215,7 +197,6 @@
 
     document.getElementById("order-form").addEventListener("submit", function(e) {
       e.preventDefault();
-
       const data = {
         name: document.getElementById("name").value,
         phone: document.getElementById("phone").value,
@@ -224,16 +205,29 @@
         first_name: tg.initDataUnsafe.user?.first_name,
         product: product
       };
-
       alert("در حال ارسال اطلاعات سفارش...");
       console.log("🟢 سفارش:", data);
-
-      // send to webhook in next step...
+      
+      fetch("https://panel.gambronservice.xyz:8443/webhook-test/submit_order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("✅ سفارش شما با موفقیت ثبت شد!");
+        } else {
+          alert("❌ خطا در ثبت سفارش");
+        }
+      })
+      .catch(err => {
+        alert("❌ اتصال برقرار نشد. لطفاً دوباره تلاش کنید.");
+        console.error("خطا:", err);
+      });
+    
     });
   </script>
 </body>
 </html>
-
-<script>
-  document.getElementById("lang-select").value = lang;
-</script>
